@@ -1,0 +1,186 @@
+package br.com.mlp.compiler.ast;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.antlr.v4.runtime.tree.TerminalNode;
+
+import br.com.mlp.compiler.parser.MlpBaseVisitor;
+import br.com.mlp.compiler.parser.MlpParser;
+
+/**
+ * Visitor que percorre a parse tree do ANTLR e constrói a AST.
+ */
+public class AstBuilder extends MlpBaseVisitor<AstNode> {
+
+    // --------- programa ---------
+
+    @Override
+    public AstNode visitPrograma(MlpParser.ProgramaContext ctx) {
+        List<DeclNode> decls = new ArrayList<>();
+        for (MlpParser.TipoContext tctx : ctx.tipo()) {
+            decls.add((DeclNode) visit(tctx));
+        }
+
+        List<CommandNode> cmds = new ArrayList<>();
+        for (MlpParser.ComandoContext cctx : ctx.comando()) {
+            CommandNode cmd = (CommandNode) visit(cctx);
+            if (cmd != null) {
+                cmds.add(cmd);
+            }
+        }
+
+        return new ProgramNode(decls, cmds);
+    }
+
+    // --------- tipo / listaIdent ---------
+
+    @Override
+    public AstNode visitTipo(MlpParser.TipoContext ctx) {
+        Type type;
+        if (ctx.INTEIRO() != null) {
+            type = Type.INTEIRO;
+        } else if (ctx.REAL() != null) {
+            type = Type.REAL;
+        } else {
+            type = Type.CARACTER;
+        }
+
+        List<String> names = new ArrayList<>();
+        // listaIdent : IDENT (COMMA IDENT)* ;
+        for (TerminalNode identToken : ctx.listaIdent().IDENT()) {
+            names.add(identToken.getText());
+        }
+
+        return new DeclNode(type, names);
+    }
+
+    // --------- comando / comandoSimples ---------
+
+    @Override
+    public AstNode visitComando(MlpParser.ComandoContext ctx) {
+        // comando : comandoSimples SEMI ;
+        return visit(ctx.comandoSimples());
+    }
+
+    @Override
+    public AstNode visitComandoSimples(MlpParser.ComandoSimplesContext ctx) {
+        if (ctx.condicional() != null) {
+            return visit(ctx.condicional());
+        } else if (ctx.iterativo() != null) {
+            return visit(ctx.iterativo());
+        } else if (ctx.atribuicao() != null) {
+            return visit(ctx.atribuicao());
+        }
+        return null;
+    }
+
+    // --------- atribuicao ---------
+
+    @Override
+    public AstNode visitAtribuicao(MlpParser.AtribuicaoContext ctx) {
+        // atribuicao :
+        //   IDENT ASSIGN (expressao | IDENT) (operador (expressao | IDENT))* ;
+
+        String varName = ctx.IDENT(0).getText(); // lado esquerdo
+
+        ExpressionNode expr;
+
+        if (!ctx.expressao().isEmpty()) {
+            // caso com expressão explícita (ex: a = (b + 1))
+            expr = (ExpressionNode) visit(ctx.expressao(0));
+        } else if (ctx.IDENT().size() > 1) {
+            // caso simples: a = b
+            expr = new VarRefNode(ctx.IDENT(1).getText());
+        } else {
+            // não deveria acontecer na sintaxe atual
+            expr = null;
+        }
+
+        // por enquanto ignoramos operadores extras (a = b + c + d;)
+        return new AssignNode(varName, expr);
+    }
+
+    // --------- condicional (se) ---------
+
+    @Override
+    public AstNode visitCondicional(MlpParser.CondicionalContext ctx) {
+        ConditionNode cond = (ConditionNode) visit(ctx.condicao());
+
+        // condicional : SE condicao ENTAO comandoSimples (SENAO comandoSimples)? ;
+        CommandNode thenCmd = (CommandNode) visit(ctx.comandoSimples(0));
+        CommandNode elseCmd = null;
+
+        if (ctx.SENAO() != null) {
+            elseCmd = (CommandNode) visit(ctx.comandoSimples(1));
+        }
+
+        return new IfNode(cond, thenCmd, elseCmd);
+    }
+
+    // --------- iterativo (enquanto) ---------
+
+    @Override
+    public AstNode visitIterativo(MlpParser.IterativoContext ctx) {
+        // iterativo : ENQUANTO condicao comandoSimples ;
+        ConditionNode cond = (ConditionNode) visit(ctx.condicao());
+        CommandNode body = (CommandNode) visit(ctx.comandoSimples());
+        return new WhileNode(cond, body);
+    }
+
+    // --------- condicao / compSimples ---------
+
+    @Override
+    public AstNode visitCondicao(MlpParser.CondicaoContext ctx) {
+        // condicao :
+        //   LPAREN compSimples RPAREN ( (E | OR) LPAREN compSimples RPAREN )*
+        // | LPAREN IDENT NOT LPAREN compSimples ( (E | OR) compSimples )* RPAREN RPAREN
+
+        // Por enquanto tratamos apenas o primeiro compSimples (caso simples)
+        MlpParser.CompSimplesContext cctx = ctx.compSimples(0);
+        return visit(cctx);
+    }
+
+    @Override
+    public AstNode visitCompSimples(MlpParser.CompSimplesContext ctx) {
+        // compSimples : IDENT logico (IDENT | NUM) ;
+
+        TerminalNode firstIdent = ctx.IDENT(0);
+        ExpressionNode left = new VarRefNode(firstIdent.getText());
+
+        String op = ctx.logico().getText();
+
+        ExpressionNode right;
+        if (ctx.NUM() != null) {
+            right = new NumLiteralNode(ctx.NUM().getText());
+        } else {
+            // segundo IDENT
+            TerminalNode secondIdent = ctx.IDENT(1);
+            right = new VarRefNode(secondIdent.getText());
+        }
+
+        return new ConditionNode(left, op, right);
+    }
+
+    // --------- expressao / numero ---------
+
+    @Override
+    public AstNode visitExpressao(MlpParser.ExpressaoContext ctx) {
+        // expressao :
+        //     numero
+        //   | LPAREN expressao operador expressao RPAREN
+        if (ctx.numero() != null) {
+            return visit(ctx.numero());
+        }
+
+        ExpressionNode left = (ExpressionNode) visit(ctx.expressao(0));
+        String op = ctx.operador().getText();
+        ExpressionNode right = (ExpressionNode) visit(ctx.expressao(1));
+        return new BinaryExprNode(left, op, right);
+    }
+
+    @Override
+    public AstNode visitNumero(MlpParser.NumeroContext ctx) {
+        return new NumLiteralNode(ctx.NUM().getText());
+    }
+}
