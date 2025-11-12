@@ -1,6 +1,7 @@
 package br.com.mlp;
 
 import java.nio.file.*;
+import java.util.List;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
@@ -9,6 +10,8 @@ import br.com.mlp.compiler.parser.MlpLexer;
 import br.com.mlp.compiler.parser.MlpParser;
 import br.com.mlp.compiler.ast.AstBuilder;
 import br.com.mlp.compiler.ast.ProgramNode;
+import br.com.mlp.diagnostics.*;
+import br.com.mlp.lex.*;
 
 public class App {
     public static void main(String[] args) throws Exception {
@@ -20,26 +23,58 @@ public class App {
         String caminho = args[0];
         String codigo = Files.readString(Path.of(caminho));
 
-        // 1) Lexer + Parser
-        CharStream input = CharStreams.fromString(codigo);
-        MlpLexer lexer = new MlpLexer(input);
+        ErrorReporter reporter = new ErrorReporter();
+
+        // ---------------- Fase A: Tokenização (léxico) ----------------
+        System.out.println("== Léxico ==");
+        CharStream inputA = CharStreams.fromString(codigo);
+        TokenScanner scanner = new TokenScanner(reporter);
+        List<TokenInfo> tokenList = scanner.scan(inputA);
+
+        for (TokenInfo ti : tokenList) {
+            System.out.printf("Linha %d, Col %d -> %-12s '%s'%s%n",
+                ti.line, ti.column + 1,
+                ti.typeName, ti.text,
+                ti.isReserved ? "  [reservada]" : ""
+            );
+        }
+
+        // Se houve erro léxico, continua para parser, mas já imprime aviso
+        if (reporter.hasErrorsOfType(ErrorType.LEXICO)) {
+            System.out.println("\n[AVISO] Foram encontrados erros léxicos.");
+        }
+
+        // ---------------- Fase B: Sintático (parser) ----------------
+        System.out.println("\n== Sintático ==");
+        CharStream inputB = CharStreams.fromString(codigo);
+        MlpLexer lexer = new MlpLexer(inputB);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         MlpParser parser = new MlpParser(tokens);
 
+        // Remove listeners padrão e adiciona o nosso
+        parser.removeErrorListeners();
+        parser.addErrorListener(new MlpSyntaxErrorListener(reporter));
+
         ParseTree tree = parser.programa();
 
-        // SE deu erro sintático, não tenta construir AST
-        if (parser.getNumberOfSyntaxErrors() > 0) {
-            System.err.println("[AVISO] Foram encontrados erros sintáticos. AST não será construída.");
-            return;
+        if (reporter.hasErrorsOfType(ErrorType.SINTATICO)) {
+            System.out.println("[AVISO] Foram encontrados erros sintáticos. AST não será construída.");
+        } else {
+            // ---------------- Fase C: AST (se sintaxe ok) ----------------
+            System.out.println("\n== AST ==");
+            AstBuilder builder = new AstBuilder();
+            ProgramNode ast = (ProgramNode) builder.visit(tree);
+            System.out.println(ast);
         }
 
-        // 2) Construir AST
-        AstBuilder builder = new AstBuilder();
-        ProgramNode ast = (ProgramNode) builder.visit(tree);
-
-        // 3) Mostrar AST
-        System.out.println("AST construída:");
-        System.out.println(ast);
+        // ---------------- Consolidação: imprimir diagnósticos ----------------
+        if (reporter.hasAnyError()) {
+            System.out.println("\n== Erros (consolidados) ==");
+            for (Diagnostic d : reporter.all()) {
+                System.out.println(d.toString());
+            }
+        } else {
+            System.out.println("\nSem erros léxicos/sintáticos nesta fase.");
+        }
     }
 }
