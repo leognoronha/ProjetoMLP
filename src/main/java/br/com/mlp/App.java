@@ -57,14 +57,28 @@ public class App {
 
         ParseTree tree = parser.programa();
 
+        ProgramNode ast = null;
+
         if (reporter.hasErrorsOfType(ErrorType.SINTATICO)) {
             System.out.println("[AVISO] Foram encontrados erros sintáticos. AST não será construída.");
         } else {
             // ---------------- Fase C: AST (se sintaxe ok) ----------------
             System.out.println("\n== AST ==");
             AstBuilder builder = new AstBuilder();
-            ProgramNode ast = (ProgramNode) builder.visit(tree);
+            ast = (ProgramNode) builder.visit(tree);
             System.out.println(ast);
+        }
+
+        // ---------------- Fase D: Semântica ----------------
+        if (ast != null) {
+            System.out.println("\n== Semântica ==");
+            var sema = new br.com.mlp.compiler.semantics.SemanticAnalyzer(reporter, tokenList);
+            var symtab = sema.analyze(ast);
+      
+            System.out.println("Tabela de Símbolos:");
+            for (var e : symtab.all()) {
+              System.out.println("  - " + e);
+            }
         }
 
         // ---------------- Consolidação: imprimir diagnósticos ----------------
