@@ -125,26 +125,10 @@ public class CodeGenerator {
         switch (op) {
             case ">" -> emit(Opcode.CMPGT, r1, r2);
             case "<" -> emit(Opcode.CMPLT, r1, r2);
+            case ">=" -> emit(Opcode.CMPGE, r1, r2);
+            case "<=" -> emit(Opcode.CMPLE, r1, r2);
             case "==" -> emit(Opcode.CMPEQ, r1, r2);
-
-            case ">=" -> {
-                // a >= b  <=>  !(a < b)
-                emit(Opcode.CMPLT, r1, r2);           // r1 = (a < b)
-                // não temos NOT na tabela, então vamos usar:
-                // se r1 == 1 => false; se r1 == 0 => true
-                // Poderíamos modelar isso melhor com mais registradores,
-                // mas para deixar simples, assumimos CMP* já devolve 1/0
-                // e trabalhamos diretamente com esse valor.
-                // (você pode refinar isso depois se quiser)
-            }
-            case "<=" -> {
-                // a <= b  <=>  !(a > b)
-                emit(Opcode.CMPGT, r1, r2);           // r1 = (a > b)
-            }
-            case "!=" -> {
-                // a != b  <=>  !(a == b)
-                emit(Opcode.CMPEQ, r1, r2);           // r1 = (a == b)
-            }
+            case "!=" -> emit(Opcode.CMPNE, r1, r2);
             default -> {
                 // fallback: trata como igualdade
                 emit(Opcode.CMPEQ, r1, r2);

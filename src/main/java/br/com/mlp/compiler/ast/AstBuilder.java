@@ -84,20 +84,57 @@ public class AstBuilder extends MlpBaseVisitor<AstNode> {
 
         String varName = ctx.IDENT(0).getText(); // lado esquerdo
 
+        // Primeiro elemento após o =
+        // A gramática permite: (expressao | IDENT) (operador (expressao | IDENT))*
+        // O parser pode ter usado expressão OU IDENT para o primeiro elemento
+        // e depois expressão OU IDENT para cada operador
+        
+        int expressaoIndex = 0;
+        int identIndex = 1; // IDENT(0) é a variável destino
         ExpressionNode expr;
-
-        if (!ctx.expressao().isEmpty()) {
-            // caso com expressão explícita (ex: a = (b + 1))
+        
+        // Determinar o primeiro elemento: pode ser expressao ou IDENT
+        // Se há expressões e o número de expressões é maior que o número de operadores,
+        // então o primeiro elemento foi uma expressão
+        // Caso contrário, foi um IDENT
+        if (!ctx.expressao().isEmpty() && ctx.expressao().size() > ctx.operador().size()) {
+            // Primeiro elemento é uma expressão (ex: a = (b + 1))
             expr = (ExpressionNode) visit(ctx.expressao(0));
+            expressaoIndex = 1;
         } else if (ctx.IDENT().size() > 1) {
-            // caso simples: a = b
+            // Primeiro elemento é um IDENT (ex: a = b ou a = x + 1)
             expr = new VarRefNode(ctx.IDENT(1).getText());
+            identIndex = 2;
         } else {
             // não deveria acontecer na sintaxe atual
             expr = null;
         }
 
-        // por enquanto ignoramos operadores extras (a = b + c + d;)
+        // Se há operadores extras, construir expressões binárias
+        // Ex: x = x + 1 -> BinaryExprNode(VarRefNode(x), "+", NumLiteralNode(1))
+        // Para cada operador, o próximo elemento pode ser (expressao | IDENT)
+        for (int i = 0; i < ctx.operador().size(); i++) {
+            String op = ctx.operador(i).getText();
+            
+            ExpressionNode right;
+            // Verificar se há uma expressão disponível para este operador
+            if (expressaoIndex < ctx.expressao().size()) {
+                // Há uma expressão para este operador
+                right = (ExpressionNode) visit(ctx.expressao(expressaoIndex));
+                expressaoIndex++;
+            } else if (identIndex < ctx.IDENT().size()) {
+                // Há um IDENT para este operador
+                right = new VarRefNode(ctx.IDENT(identIndex).getText());
+                identIndex++;
+            } else {
+                // Não deveria acontecer - não há elemento para o operador
+                break;
+            }
+            
+            // Construir expressão binária: expr op right
+            expr = new BinaryExprNode(expr, op, right);
+        }
+
         return new AssignNode(varName, expr);
     }
 

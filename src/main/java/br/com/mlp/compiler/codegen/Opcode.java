@@ -13,7 +13,10 @@ public enum Opcode {
 
     CMPGT,     // CMPGT R1, R2   (R1 = (R1 > R2) ? 1 : 0)
     CMPLT,     // CMPLT R1, R2
+    CMPGE,     // CMPGE R1, R2   (R1 = (R1 >= R2) ? 1 : 0)
+    CMPLE,     // CMPLE R1, R2   (R1 = (R1 <= R2) ? 1 : 0)
     CMPEQ,     // CMPEQ R1, R2
+    CMPNE,     // CMPNE R1, R2   (R1 = (R1 != R2) ? 1 : 0)
 
     JMP,       // JMP L
     JMPFALSE,  // JMPFALSE R, L
