@@ -48,23 +48,53 @@ mvn exec:java -Dexec.args="programas/teste1.mlp"
 - **Por que usar**: Prepara o projeto para execução, gerando todos os arquivos necessários
 - **Resultado**: O projeto está compilado e pronto para executar
 
-### `mvn exec:java -Dexec.args="programas/teste1.mlp"`
-- **O que faz**: 
-  1. Executa a classe principal `br.com.mlp.App`
-  2. Passa `programas/teste1.mlp` como argumento para o programa
-  3. O programa executa as três fases de compilação:
-     - **Fase Léxica**: Tokeniza o código e mostra todos os tokens encontrados
-     - **Fase Sintática**: Verifica a estrutura sintática do programa
-     - **Fase AST**: Constrói e exibe a Abstract Syntax Tree (apenas se não houver erros sintáticos)
-  4. Ao final, consolida e exibe todos os erros encontrados (se houver)
+### `mvn exec:java -Dexec.args="programas/nome_teste.mlp"`
+- **O que faz**: Executa o compilador MLP processando o arquivo especificado através de três fases sequenciais
 - **Parâmetros**:
   - `exec:java`: Plugin do Maven que executa uma classe Java
-  - `-Dexec.args="..."`: Define os argumentos que serão passados para o método `main()`
-- **Resultado**: Executa o compilador mostrando as três fases e a consolidação de erros
+  - `-Dexec.args="programas/nome_teste.mlp"`: Define o caminho do arquivo `.mlp` que será passado como argumento para o método `main()` da classe `br.com.mlp.App`
+
+- **Fases de Execução**:
+  1. **Fase Léxica (Tokenização)**:
+     - Lê o arquivo fonte e divide o código em tokens (palavras reservadas, identificadores, números, operadores, etc.)
+     - Identifica a posição (linha e coluna) de cada token
+     - Marca tokens reservados (palavras-chave da linguagem)
+     - Detecta e reporta erros léxicos (símbolos não reconhecidos)
+     - **Saída**: Lista completa de todos os tokens encontrados com suas informações
+  
+  2. **Fase Sintática (Parsing)**:
+     - Verifica se a sequência de tokens segue a gramática da linguagem MLP
+     - Constrói uma árvore de parsing (ParseTree) se a estrutura estiver correta
+     - Detecta e reporta erros sintáticos (estruturas inválidas, tokens inesperados)
+     - **Saída**: Indicação de que a análise sintática foi executada
+  
+  3. **Fase AST (Abstract Syntax Tree)**:
+     - Constrói a Abstract Syntax Tree a partir da ParseTree (apenas se não houver erros sintáticos)
+     - A AST representa a estrutura semântica do programa de forma hierárquica
+     - **Saída**: Representação textual da AST mostrando declarações e comandos do programa
+  
+  4. **Consolidação de Erros**:
+     - Coleta todos os erros encontrados nas fases anteriores
+     - Exibe um resumo consolidado com códigos de erro, localização (linha/coluna) e descrição
+     - **Saída**: Lista de erros (se houver) ou mensagem de sucesso
+- **Resultado**: O compilador executa todas as fases e exibe a saída formatada de cada uma, permitindo identificar problemas em qualquer etapa do processo de compilação
 
 ## 📝 Exemplo de Saída Esperada
 
-Ao executar o comando com o arquivo `programas/teste1.mlp`, você deve ver a seguinte saída:
+Ao executar o comando `mvn exec:java -Dexec.args="programas/nome_teste.mlp"`, você verá a saída organizada em seções correspondentes às três fases de compilação:
+
+### Estrutura da Saída
+
+A saída é dividida em quatro seções principais:
+
+1. **== Léxico ==**: Lista de todos os tokens encontrados
+2. **== Sintático ==**: Indicação da execução da análise sintática
+3. **== AST ==**: Representação da Abstract Syntax Tree
+4. **Consolidação**: Resumo de erros ou mensagem de sucesso
+
+### Exemplo Completo
+
+Para um arquivo válido (ex: `programas/teste1.mlp`), a saída será:
 
 ```
 == Léxico ==
@@ -94,7 +124,6 @@ Linha 4, Col 2 -> DOT          '.'
 == Sintático ==
 
 == AST ==
-
 Program(
   Decls:
     Decl(INTEIRO a, b)
@@ -102,14 +131,47 @@ Program(
     If(Cond(Var(a) > Num(10)), then=Assign(b = Num(1)))
 )
 
-Sem erros léxicos/sintáticos nesta fase.
+== Semântica ==
+Tabela de Símbolos:
+  - a : INTEIRO (linha 2, col 9)
+  - b : INTEIRO (linha 2, col 12)
+
+Sem erros léxicos/sintáticos/semânticos nesta fase.
 ```
 
-A saída mostra:
-- **Fase Léxica**: Lista completa de todos os tokens encontrados, com linha, coluna, tipo do token e texto. Tokens reservados são marcados com `[reservada]`
-- **Fase Sintática**: Indica que a análise sintática foi executada
-- **Fase AST**: A estrutura da AST (Abstract Syntax Tree) construída a partir do código MLP
-- **Consolidação**: Mensagem final indicando se foram encontrados erros ou não
+### Interpretação da Saída
+
+Cada seção da saída fornece informações específicas:
+
+- **Fase Léxica (`== Léxico ==`)**:
+  - Cada linha mostra um token encontrado no formato: `Linha X, Col Y -> TIPO_TOKEN 'texto' [reservada]`
+  - `TIPO_TOKEN`: Nome simbólico do token (ex: `IDENT`, `NUM`, `SE`, `INTEIRO`)
+  - `'texto'`: O texto literal do token no código fonte
+  - `[reservada]`: Aparece apenas para palavras-chave da linguagem (ex: `inteiro`, `se`, `entao`)
+  - Se houver erros léxicos, uma mensagem de aviso será exibida após a lista de tokens
+
+- **Fase Sintática (`== Sintático ==`)**:
+  - Esta seção indica que a análise sintática foi executada
+  - Se houver erros sintáticos, uma mensagem de aviso será exibida e a fase AST será pulada
+  - Caso contrário, a fase AST será executada
+
+- **Fase AST (`== AST ==`)**:
+  - Mostra a estrutura hierárquica do programa em formato textual
+  - `Program`: Nó raiz contendo declarações e comandos
+  - `Decls`: Lista de declarações de variáveis com seus tipos
+  - `Commands`: Lista de comandos (atribuições, condicionais, loops, etc.)
+  - A representação mostra a estrutura aninhada do programa de forma legível
+
+- **Consolidação de Erros**:
+  - Se **não houver erros**: Exibe `"Sem erros léxicos/sintáticos nesta fase."`
+  - Se **houver erros**: Exibe uma seção `== Erros (consolidados) ==` com:
+    - Código do erro (formato `COD.XXX`)
+    - Tipo do erro (léxico, sintático ou semântico)
+    - Localização (linha e coluna)
+    - Descrição do problema
+    - Símbolo que causou o erro
+
+**Nota**: A saída pode variar dependendo do conteúdo do arquivo `.mlp` processado. Arquivos com erros mostrarão mensagens de diagnóstico detalhadas, enquanto arquivos válidos mostrarão a AST completa.
 
 ## 📁 Estrutura do Projeto
 
