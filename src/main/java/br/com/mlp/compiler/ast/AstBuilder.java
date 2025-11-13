@@ -166,17 +166,26 @@ public class AstBuilder extends MlpBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitExpressao(MlpParser.ExpressaoContext ctx) {
-        // expressao :
-        //     numero
-        //   | LPAREN expressao operador expressao RPAREN
+        // Caso 1: número
         if (ctx.numero() != null) {
             return visit(ctx.numero());
         }
 
-        ExpressionNode left = (ExpressionNode) visit(ctx.expressao(0));
-        String op = ctx.operador().getText();
-        ExpressionNode right = (ExpressionNode) visit(ctx.expressao(1));
-        return new BinaryExprNode(left, op, right);
+        // Caso 2: identificador
+        if (ctx.IDENT() != null) {
+            return new VarRefNode(ctx.IDENT().getText());
+        }
+        
+        // Caso 3: parênteses com operador binário
+        // expressao : LPAREN expressao operador expressao RPAREN
+        if (ctx.expressao().size() == 2 && ctx.operador() != null) {
+            ExpressionNode left = (ExpressionNode) visit(ctx.expressao(0));
+            String op = ctx.operador().getText();
+            ExpressionNode right = (ExpressionNode) visit(ctx.expressao(1));
+            return new BinaryExprNode(left, op, right);
+        }
+        // fallback (não deveria chegar aqui com a gramática atual)
+        return null;
     }
 
     @Override

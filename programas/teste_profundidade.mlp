@@ -1,0 +1,16 @@
+$
+inteiro a;
+
+a = 0;
+se (a > 0) entao
+  se (a > 0) entao
+    se (a > 0) entao
+      se (a > 0) entao
+        se (a > 0) entao
+          se (a > 0) entao
+            se (a > 0) entao
+              se (a > 0) entao
+                se (a > 0) entao
+                  se (a > 0) entao
+                    a = a + 1;
+$.

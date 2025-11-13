@@ -1,0 +1,21 @@
+$
+inteiro x, y, contador;
+real r;
+caracter ch;
+
+x = 10;
+y = 3;
+contador = 0;
+r = (1.0 / 2.0);
+
+se (x >= y) E (x != y) entao
+  x = x RESTO y
+senao
+  x = (x + 1)
+;
+
+enquanto (contador < 5) OR (x < 20)
+  contador = contador + 1
+;
+
+$.

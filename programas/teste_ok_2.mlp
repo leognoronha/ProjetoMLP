@@ -1,0 +1,19 @@
+$
+inteiro x, y;
+real r;
+caracter c;
+
+x = 10;
+y = 3;
+
+r = x / y;
+
+r = r * (x + y);
+
+se (x >= y) E (x != y) entao
+  x = (x RESTO y);
+
+enquanto (x < y) OR (x == y)
+  x = (x + 1);
+
+$.

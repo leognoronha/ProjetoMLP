@@ -69,6 +69,7 @@ logico
 
 expressao
   : numero
+  | IDENT
   | LPAREN expressao operador expressao RPAREN
   ;
 

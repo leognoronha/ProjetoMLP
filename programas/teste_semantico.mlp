@@ -1,0 +1,10 @@
+$
+inteiro a, b, muitoLongoId1;
+caracter ch;
+
+a = 1;
+b = a + 2;
+ch = 3;
+x = a + b;
+
+$.

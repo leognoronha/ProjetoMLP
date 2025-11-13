@@ -88,7 +88,7 @@ public class App {
                 System.out.println(d.toString());
             }
         } else {
-            System.out.println("\nSem erros léxicos/sintáticos nesta fase.");
+            System.out.println("\nSem erros léxicos/sintáticos/semânticos nesta fase.");
         }
     }
 }
