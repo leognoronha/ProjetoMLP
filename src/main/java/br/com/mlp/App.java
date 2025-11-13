@@ -10,6 +10,8 @@ import br.com.mlp.compiler.parser.MlpLexer;
 import br.com.mlp.compiler.parser.MlpParser;
 import br.com.mlp.compiler.ast.AstBuilder;
 import br.com.mlp.compiler.ast.ProgramNode;
+import br.com.mlp.compiler.codegen.CodeGenerator;
+import br.com.mlp.compiler.codegen.TacInstruction;
 import br.com.mlp.diagnostics.*;
 import br.com.mlp.lex.*;
 
@@ -87,8 +89,21 @@ public class App {
             for (Diagnostic d : reporter.all()) {
                 System.out.println(d.toString());
             }
+            return;
         } else {
             System.out.println("\nSem erros léxicos/sintáticos/semânticos nesta fase.");
+        }
+
+        // ---------------- Fase E: Geração de Código Intermediário (TAC) ----------------
+        // Só gera código se não houver erros e AST foi construída
+        if (ast != null) {
+            System.out.println("\n== Código Intermediário (TAC) ==");
+            CodeGenerator codeGen = new CodeGenerator();
+            List<TacInstruction> tac = codeGen.generate(ast);
+
+            for (TacInstruction instr : tac) {
+                System.out.println(instr);
+            }
         }
     }
 }
