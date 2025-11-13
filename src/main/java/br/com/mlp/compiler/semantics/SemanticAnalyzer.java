@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 
 import br.com.mlp.compiler.ast.*;
-import br.com.mlp.compiler.semantics.SymbolTable.Entry;
 import br.com.mlp.diagnostics.*;
 import br.com.mlp.lex.TokenInfo;
 import br.com.mlp.compiler.parser.MlpLexer;

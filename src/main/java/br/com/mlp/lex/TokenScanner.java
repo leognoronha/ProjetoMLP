@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.antlr.v4.runtime.*;
 import br.com.mlp.compiler.parser.MlpLexer;
-import br.com.mlp.compiler.parser.MlpParser; // só para nomes simbólicos do VOCABULARY
 import br.com.mlp.diagnostics.*;
 
 public class TokenScanner {
