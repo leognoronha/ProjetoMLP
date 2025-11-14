@@ -3,8 +3,8 @@ package br.com.mlp.diagnostics;
 public class Diagnostic {
     private final ErrorType type;
     private final ErrorCode code;
-    private final int line;     // 1-based
-    private final int column;   // 0/1-based conforme ANTLR (vamos padronizar 1-based na impressão)
+    private final int line;
+    private final int column;
     private final String message;
     private final String offendingSymbol;
 

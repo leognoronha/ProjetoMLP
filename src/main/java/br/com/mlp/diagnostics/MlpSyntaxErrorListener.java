@@ -16,7 +16,6 @@ public class MlpSyntaxErrorListener extends BaseErrorListener {
                             String msg,
                             RecognitionException e) {
 
-        // Mapeia para um código genérico sintático (pode especializar se quiser)
         ErrorCode code = ErrorCode.SINTAXE_ESTRUTURA_INVALIDA;
 
         String offending = "";
@@ -24,7 +23,6 @@ public class MlpSyntaxErrorListener extends BaseErrorListener {
             offending = t.getText();
         }
 
-        // Padroniza coluna 1-based na apresentação
         reporter.add(new Diagnostic(
                 ErrorType.SINTATICO,
                 code,

@@ -11,8 +11,8 @@ public class SymbolTable {
     public static class Entry {
         public final String name;
         public final Type type;
-        public final int line;   // 1-based (melhor esforço)
-        public final int column; // 1-based (melhor esforço)
+        public final int line;
+        public final int column;
 
         public Entry(String name, Type type, int line, int column) {
             this.name = name;
@@ -30,7 +30,7 @@ public class SymbolTable {
     private final Map<String, Entry> entries = new LinkedHashMap<>();
 
     public boolean declare(String name, Type type, int line, int column) {
-        if (entries.containsKey(name)) return false; // se quiser acusar duplicata depois
+        if (entries.containsKey(name)) return false;
         entries.put(name, new Entry(name, type, line, column));
         return true;
     }

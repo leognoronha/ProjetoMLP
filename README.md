@@ -176,30 +176,60 @@ Cada seção da saída fornece informações específicas:
 ## 📁 Estrutura do Projeto
 
 ```
-comp-projeto/
-├── src/
-│   ├── main/
-│   │   ├── antlr4/                    # Gramática ANTLR4 (Mlp.g4)
-│   │   └── java/
-│   │       └── br/com/mlp/
-│   │           ├── App.java           # Classe principal
-│   │           ├── compiler/
-│   │           │   ├── ast/           # Nós da AST
-│   │           │   └── parser/        # Parser gerado pelo ANTLR4
-│   │           ├── lex/               # Sistema de análise léxica
-│   │           │   ├── TokenScanner.java
-│   │           │   └── TokenInfo.java
-│   │           └── diagnostics/       # Sistema de diagnóstico de erros
-│   │               ├── ErrorReporter.java
-│   │               ├── Diagnostic.java
-│   │               ├── ErrorCode.java
-│   │               ├── ErrorType.java
-│   │               └── MlpSyntaxErrorListener.java
-│   └── test/                          # Testes
-├── programas/                          # Arquivos .mlp para compilar
-├── target/                            # Arquivos gerados (não versionado)
-├── pom.xml                            # Configuração Maven
-└── README.md                          # Este arquivo
+src
+├── main
+│   ├── antlr4
+│   │   └── br
+│   │       └── com
+│   │           └── mlp
+│   │               └── compiler
+│   │                   └── parser
+│   │                       └── Mlp.g4
+│   ├── java
+│   │   └── br
+│   │       └── com
+│   │           └── mlp
+│   │               ├── compiler
+│   │               │   ├── ast
+│   │               │   │   ├── AssignNode.java
+│   │               │   │   ├── AstBuilder.java
+│   │               │   │   ├── AstNode.java
+│   │               │   │   ├── BinaryExprNode.java
+│   │               │   │   ├── CommandNode.java
+│   │               │   │   ├── ConditionNode.java
+│   │               │   │   ├── DeclNode.java
+│   │               │   │   ├── ExpressionNode.java
+│   │               │   │   ├── IfNode.java
+│   │               │   │   ├── NumLiteralNode.java
+│   │               │   │   ├── ProgramNode.java
+│   │               │   │   ├── Type.java
+│   │               │   │   ├── VarRefNode.java
+│   │               │   │   └── WhileNode.java
+│   │               │   ├── codegen
+│   │               │   │   ├── CodeGenerator.java
+│   │               │   │   ├── Opcode.java
+│   │               │   │   └── TacInstruction.java
+│   │               │   └── semantics
+│   │               │       ├── SemanticAnalyzer.java
+│   │               │       └── SymbolTable.java
+│   │               ├── diagnostics
+│   │               │   ├── Diagnostic.java
+│   │               │   ├── ErrorCode.java
+│   │               │   ├── ErrorReporter.java
+│   │               │   ├── ErrorType.java
+│   │               │   └── MlpSyntaxErrorListener.java
+│   │               ├── lex
+│   │               │   ├── TokenInfo.java
+│   │               │   └── TokenScanner.java
+│   │               └── App.java
+│   └── resources
+│       └── grammars
+└── test
+    └── java
+        └── br
+            └── com
+                └── mlp
+                    └── AppTest.java
 ```
 
 ### Componentes Principais

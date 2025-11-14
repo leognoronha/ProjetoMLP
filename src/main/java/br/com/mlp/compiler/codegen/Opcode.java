@@ -1,26 +1,32 @@
 package br.com.mlp.compiler.codegen;
 
 public enum Opcode {
-    LOAD,      // LOAD R, var
-    LOADI,     // LOADI R, const
-    STORE,     // STORE var, R
-    ADD,       // ADD Rdest, R1, R2
-    ADDI,      // ADDI Rdest, const
-    SUB,       // SUB Rdest, R1, R2
-    SUBI,      // SUBI Rdest, const
-    MUL,       // MUL Rdest, R1, R2
-    DIV,       // DIV Rdest, R1, R2
+    // Carregamento e armazenamento
+    LOAD,      // LOAD R, var        - carrega variável para registrador
+    LOADI,     // LOADI R, const     - carrega constante para registrador
+    STORE,     // STORE var, R       - armazena registrador em variável
 
-    CMPGT,     // CMPGT R1, R2   (R1 = (R1 > R2) ? 1 : 0)
-    CMPLT,     // CMPLT R1, R2
-    CMPGE,     // CMPGE R1, R2   (R1 = (R1 >= R2) ? 1 : 0)
-    CMPLE,     // CMPLE R1, R2   (R1 = (R1 <= R2) ? 1 : 0)
-    CMPEQ,     // CMPEQ R1, R2
-    CMPNE,     // CMPNE R1, R2   (R1 = (R1 != R2) ? 1 : 0)
+    // Aritmética
+    ADD,       // ADD Rdest, R1, R2  - Rdest = R1 + R2
+    ADDI,      // ADDI Rdest, const  - Rdest = Rdest + const
+    SUB,       // SUB Rdest, R1, R2  - Rdest = R1 - R2
+    SUBI,      // SUBI Rdest, const  - Rdest = Rdest - const
+    MUL,       // MUL Rdest, R1, R2  - Rdest = R1 * R2
+    DIV,       // DIV Rdest, R1, R2  - Rdest = R1 / R2
 
-    JMP,       // JMP L
-    JMPFALSE,  // JMPFALSE R, L
-    JMPTRUE,   // JMPTRUE R, L
+    // Comparações
+    CMPGT,     // >    (R1 > R2)
+    CMPLT,     // <    (R1 < R2)
+    CMPGE,     // >=   (R1 >= R2)
+    CMPLE,     // <=   (R1 <= R2)
+    CMPEQ,     // ==   (R1 == R2)
+    CMPNE,     // !=   (R1 != R2)
 
-    LABEL      // LABEL L
+    // Saltos
+    JMP,       // JMP L          - salto incondicional para L
+    JMPFALSE,  // JMPFALSE R, L  - salta para L se R == 0 (falso)
+    JMPTRUE,   // JMPTRUE R, L   - salta para L se R != 0 (verdadeiro)
+
+    // Rótulo
+    LABEL      // LABEL L        - define rótulo L
 }

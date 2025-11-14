@@ -24,7 +24,6 @@ public class CodeGenerator {
     public List<TacInstruction> generate(ProgramNode program) {
         instructions.clear();
 
-        // Gerar código só para comandos (declarações já foram tratadas na semântica)
         for (CommandNode cmd : program.getCommands()) {
             genCommand(cmd);
         }
@@ -56,19 +55,14 @@ public class CodeGenerator {
         } else if (cmd instanceof WhileNode whileNode) {
             genWhile(whileNode);
         } else {
-            // Se você tiver outros tipos (ex: comando composto), trate aqui.
-            // Por enquanto, não faz nada.
         }
     }
 
     private void genAssign(AssignNode node) {
-        // variável destino
         String varName = node.getVarName();
 
-        // gera código da expressão e obtém o registrador onde o valor está
         String regValue = genExpr(node.getExpression());
 
-        // STORE var, R
         emit(Opcode.STORE, varName, regValue);
     }
 
@@ -112,7 +106,6 @@ public class CodeGenerator {
     /* ------------ Geração de condição (comparações) ------------ */
 
     private String genCond(ConditionNode cond) {
-        // Aqui assumimos algo como Cond(Var(a) > Num(10))
         ExpressionNode left = cond.getLeft();
         ExpressionNode right = cond.getRight();
         String op = cond.getOp(); // ">", "<", "==", "!=", ">=", "<="
@@ -120,8 +113,6 @@ public class CodeGenerator {
         String r1 = genExpr(left);
         String r2 = genExpr(right);
 
-        // Vamos usar CMP* para colocar o resultado booleano em r1
-        // e ignorar o valor original de r1 (isso é comum em TAC).
         switch (op) {
             case ">" -> emit(Opcode.CMPGT, r1, r2);
             case "<" -> emit(Opcode.CMPLT, r1, r2);
@@ -130,7 +121,6 @@ public class CodeGenerator {
             case "==" -> emit(Opcode.CMPEQ, r1, r2);
             case "!=" -> emit(Opcode.CMPNE, r1, r2);
             default -> {
-                // fallback: trata como igualdade
                 emit(Opcode.CMPEQ, r1, r2);
             }
         }
@@ -170,14 +160,13 @@ public class CodeGenerator {
                     // q = left / right
                     String rQ = newReg();
                     emit(Opcode.DIV, rQ, rLeft, rRight);
-                    // qy = q * right
+
                     String rQY = newReg();
                     emit(Opcode.MUL, rQY, rQ, rRight);
-                    // dest = left - qy  => remainder
+
                     emit(Opcode.SUB, rDest, rLeft, rQY);
                 }
                 default -> {
-                    // fallback: tenta usar ADD
                     emit(Opcode.ADD, rDest, rLeft, rRight);
                 }
             }
@@ -185,7 +174,6 @@ public class CodeGenerator {
             return rDest;
         }
 
-        // Se surgir algum tipo de expressão não tratada, retorna um registrador "dummy"
         String r = newReg();
         emit(Opcode.LOADI, r, "0");
         return r;

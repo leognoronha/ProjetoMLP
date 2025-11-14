@@ -4,10 +4,10 @@ public class TokenInfo {
     public final String text;
     public final String typeName;
     public final int type;
-    public final int line;     // 1-based
-    public final int column;   // 0-based do ANTLR (vamos exibir +1)
+    public final int line;
+    public final int column;
 
-    public final boolean isReserved; // palavra reservada (token de palavra-chave)
+    public final boolean isReserved;
 
     public TokenInfo(String text, String typeName, int type, int line, int column, boolean isReserved) {
         this.text = text;

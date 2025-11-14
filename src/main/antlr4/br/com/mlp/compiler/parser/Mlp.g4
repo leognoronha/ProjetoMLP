@@ -120,7 +120,7 @@ OP_SOMA   : '+';
 OP_MULT   : '*';
 OP_DIV    : '/';
 
-// Identificador (vamos validar o máximo de 10 chars depois, na semântica)
+// Identificador (validar o máximo de 10 chars)
 fragment LETTER : [A-Za-z];
 fragment DIGIT  : [0-9];
 
@@ -139,7 +139,7 @@ WS
   : [ \t\r\n]+ -> skip
   ;
 
-// Qualquer outro símbolo vira erro léxico (vamos tratar depois, no item 7)
+// Qualquer outro símbolo vira erro léxico
 ERROR_CHAR
   : .
   ;

@@ -9,7 +9,7 @@ public class IfNode extends CommandNode {
 
   private final ConditionNode condition;
   private final CommandNode thenCommand;
-  private final CommandNode elseCommand; // pode ser null
+  private final CommandNode elseCommand;
 
   public IfNode(ConditionNode condition, CommandNode thenCommand, CommandNode elseCommand) {
       this.condition = condition;

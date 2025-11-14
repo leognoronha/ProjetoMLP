@@ -47,7 +47,6 @@ public class AstBuilder extends MlpBaseVisitor<AstNode> {
         }
 
         List<String> names = new ArrayList<>();
-        // listaIdent : IDENT (COMMA IDENT)* ;
         for (TerminalNode identToken : ctx.listaIdent().IDENT()) {
             names.add(identToken.getText());
         }
@@ -59,7 +58,6 @@ public class AstBuilder extends MlpBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitComando(MlpParser.ComandoContext ctx) {
-        // comando : comandoSimples SEMI ;
         return visit(ctx.comandoSimples());
     }
 
@@ -79,59 +77,37 @@ public class AstBuilder extends MlpBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitAtribuicao(MlpParser.AtribuicaoContext ctx) {
-        // atribuicao :
-        //   IDENT ASSIGN (expressao | IDENT) (operador (expressao | IDENT))* ;
 
-        String varName = ctx.IDENT(0).getText(); // lado esquerdo
+        String varName = ctx.IDENT(0).getText();
 
-        // Primeiro elemento após o =
-        // A gramática permite: (expressao | IDENT) (operador (expressao | IDENT))*
-        // O parser pode ter usado expressão OU IDENT para o primeiro elemento
-        // e depois expressão OU IDENT para cada operador
-        
         int expressaoIndex = 0;
-        int identIndex = 1; // IDENT(0) é a variável destino
+        int identIndex = 1;
         ExpressionNode expr;
         
-        // Determinar o primeiro elemento: pode ser expressao ou IDENT
-        // Se há expressões e o número de expressões é maior que o número de operadores,
-        // então o primeiro elemento foi uma expressão
-        // Caso contrário, foi um IDENT
         if (!ctx.expressao().isEmpty() && ctx.expressao().size() > ctx.operador().size()) {
-            // Primeiro elemento é uma expressão (ex: a = (b + 1))
             expr = (ExpressionNode) visit(ctx.expressao(0));
             expressaoIndex = 1;
         } else if (ctx.IDENT().size() > 1) {
-            // Primeiro elemento é um IDENT (ex: a = b ou a = x + 1)
             expr = new VarRefNode(ctx.IDENT(1).getText());
             identIndex = 2;
         } else {
-            // não deveria acontecer na sintaxe atual
             expr = null;
         }
 
-        // Se há operadores extras, construir expressões binárias
-        // Ex: x = x + 1 -> BinaryExprNode(VarRefNode(x), "+", NumLiteralNode(1))
-        // Para cada operador, o próximo elemento pode ser (expressao | IDENT)
         for (int i = 0; i < ctx.operador().size(); i++) {
             String op = ctx.operador(i).getText();
             
             ExpressionNode right;
-            // Verificar se há uma expressão disponível para este operador
             if (expressaoIndex < ctx.expressao().size()) {
-                // Há uma expressão para este operador
                 right = (ExpressionNode) visit(ctx.expressao(expressaoIndex));
                 expressaoIndex++;
             } else if (identIndex < ctx.IDENT().size()) {
-                // Há um IDENT para este operador
                 right = new VarRefNode(ctx.IDENT(identIndex).getText());
                 identIndex++;
             } else {
-                // Não deveria acontecer - não há elemento para o operador
                 break;
             }
             
-            // Construir expressão binária: expr op right
             expr = new BinaryExprNode(expr, op, right);
         }
 
@@ -144,7 +120,6 @@ public class AstBuilder extends MlpBaseVisitor<AstNode> {
     public AstNode visitCondicional(MlpParser.CondicionalContext ctx) {
         ConditionNode cond = (ConditionNode) visit(ctx.condicao());
 
-        // condicional : SE condicao ENTAO comandoSimples (SENAO comandoSimples)? ;
         CommandNode thenCmd = (CommandNode) visit(ctx.comandoSimples(0));
         CommandNode elseCmd = null;
 
@@ -159,7 +134,6 @@ public class AstBuilder extends MlpBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitIterativo(MlpParser.IterativoContext ctx) {
-        // iterativo : ENQUANTO condicao comandoSimples ;
         ConditionNode cond = (ConditionNode) visit(ctx.condicao());
         CommandNode body = (CommandNode) visit(ctx.comandoSimples());
         return new WhileNode(cond, body);
@@ -169,19 +143,12 @@ public class AstBuilder extends MlpBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitCondicao(MlpParser.CondicaoContext ctx) {
-        // condicao :
-        //   LPAREN compSimples RPAREN ( (E | OR) LPAREN compSimples RPAREN )*
-        // | LPAREN IDENT NOT LPAREN compSimples ( (E | OR) compSimples )* RPAREN RPAREN
-
-        // Por enquanto tratamos apenas o primeiro compSimples (caso simples)
         MlpParser.CompSimplesContext cctx = ctx.compSimples(0);
         return visit(cctx);
     }
 
     @Override
     public AstNode visitCompSimples(MlpParser.CompSimplesContext ctx) {
-        // compSimples : IDENT logico (IDENT | NUM) ;
-
         TerminalNode firstIdent = ctx.IDENT(0);
         ExpressionNode left = new VarRefNode(firstIdent.getText());
 
@@ -191,7 +158,6 @@ public class AstBuilder extends MlpBaseVisitor<AstNode> {
         if (ctx.NUM() != null) {
             right = new NumLiteralNode(ctx.NUM().getText());
         } else {
-            // segundo IDENT
             TerminalNode secondIdent = ctx.IDENT(1);
             right = new VarRefNode(secondIdent.getText());
         }
@@ -214,14 +180,12 @@ public class AstBuilder extends MlpBaseVisitor<AstNode> {
         }
         
         // Caso 3: parênteses com operador binário
-        // expressao : LPAREN expressao operador expressao RPAREN
         if (ctx.expressao().size() == 2 && ctx.operador() != null) {
             ExpressionNode left = (ExpressionNode) visit(ctx.expressao(0));
             String op = ctx.operador().getText();
             ExpressionNode right = (ExpressionNode) visit(ctx.expressao(1));
             return new BinaryExprNode(left, op, right);
         }
-        // fallback (não deveria chegar aqui com a gramática atual)
         return null;
     }
 

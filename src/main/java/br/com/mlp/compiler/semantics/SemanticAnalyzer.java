@@ -13,8 +13,6 @@ public class SemanticAnalyzer {
 
     private final ErrorReporter reporter;
     private final SymbolTable symbols = new SymbolTable();
-
-    // tokens do léxico para localizar linha/coluna (melhor esforço)
     private final List<TokenInfo> tokens;
 
     public SemanticAnalyzer(ErrorReporter reporter, List<TokenInfo> tokens) {
@@ -51,7 +49,7 @@ public class SemanticAnalyzer {
             // Premissa 2: profundidade > 10
             reportSem(ErrorCode.SEMANTICO_PROFUNDIDADE_COMANDOS, 1, 1,
                     "profundidade de comandos excede 10 (=" + depth + ")");
-            return; // continua, mas já reportou
+            return;
         }
         for (CommandNode c : cmds) {
             if (c instanceof AssignNode a) {
@@ -97,7 +95,6 @@ public class SemanticAnalyzer {
                     "identificador '" + var + "' tem " + var.length() + " caracteres (uso)");
         }
 
-        // tipo do RHS
         Type rhs = evalExpr(a.getExpression());
 
         // 4b/4c) compatibilidade
@@ -114,10 +111,7 @@ public class SemanticAnalyzer {
         Type left = evalExpr(cond.getLeft());
         Type right = evalExpr(cond.getRight());
 
-        // ambos precisam ser numéricos (int/real) ou ambos char?
-        // Aqui consideramos numéricos, já que operadores relacionais vêm de expr aritmética/ident/num
         if (!(isNumeric(left) && isNumeric(right)) && !(left == Type.CARACTER && right == Type.CARACTER)) {
-            // posição aproximada no identificador esquerdo
             int[] pos = {1,1};
             if (cond.getLeft() instanceof VarRefNode v) pos = findFirstToken(v.getName());
             reportSem(ErrorCode.SEMANTICO_TIPO_INCOMPATIVEL, pos[0], pos[1],
@@ -131,7 +125,6 @@ public class SemanticAnalyzer {
         if (e == null) return null;
 
         if (e instanceof NumLiteralNode n) {
-            // se tem ponto, REAL; senão, INTEIRO
             return n.getValue().contains(".") ? Type.REAL : Type.INTEIRO;
         }
         if (e instanceof VarRefNode v) {
@@ -139,14 +132,12 @@ public class SemanticAnalyzer {
             var entry = symbols.lookup(name);
             int[] pos = findFirstToken(name);
 
-            // 4a) variável usada deve existir
             if (entry == null) {
                 reportSem(ErrorCode.SEMANTICO_VARIAVEL_NAO_DECLARADA, pos[0], pos[1],
                         "uso de variável '" + name + "' sem declaração");
                 return null;
             }
 
-            // 1) tamanho no uso
             if (name.length() > 10) {
                 reportSem(ErrorCode.SEMANTICO_IDENT_TAMANHO_EXCEDIDO, pos[0], pos[1],
                         "identificador '" + name + "' tem " + name.length() + " caracteres (uso)");
@@ -158,7 +149,6 @@ public class SemanticAnalyzer {
             Type r = evalExpr(b.getRight());
             String op = b.getOp();
 
-            // operações aritméticas só com numéricos
             if (!isNumeric(l) || !isNumeric(r)) {
                 int[] pos = {1,1};
                 if (b.getLeft() instanceof VarRefNode v) pos = findFirstToken(v.getName());
@@ -167,7 +157,6 @@ public class SemanticAnalyzer {
                 return null;
             }
 
-            // promoção para REAL se algum lado é REAL
             if (l == Type.REAL || r == Type.REAL) return Type.REAL;
             return Type.INTEIRO;
         }
@@ -175,20 +164,14 @@ public class SemanticAnalyzer {
         return null;
     }
 
-    // ----- Helpers de tipos -----
-
     private boolean isNumeric(Type t) {
         return t == Type.INTEIRO || t == Type.REAL;
     }
 
-    // Regras de atribuição:
-    // - INTEIRO <- INTEIRO
-    // - REAL    <- REAL | INTEIRO
-    // - CARACTER<- CARACTER
     private boolean isAssignable(Type target, Type source) {
         if (target == null || source == null) return false;
         if (target == source) return true;
-        if (target == Type.REAL && source == Type.INTEIRO) return true; // widening
+        if (target == Type.REAL && source == Type.INTEIRO) return true;
         return false;
     }
 
@@ -211,7 +194,7 @@ public class SemanticAnalyzer {
         for (TokenInfo t : tokens) {
             if (Objects.equals(t.text, text)
                 && (t.type == MlpLexer.IDENT || t.type == MlpLexer.NUM)) {
-                return new int[]{t.line, t.column + 1}; // coluna 1-based
+                return new int[]{t.line, t.column + 1};
             }
         }
         return new int[]{1,1};

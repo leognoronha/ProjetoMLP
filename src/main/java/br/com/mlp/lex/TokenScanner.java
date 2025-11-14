@@ -26,7 +26,6 @@ public class TokenScanner {
             String symbolic = MlpLexer.VOCABULARY.getSymbolicName(t.getType());
             boolean isReserved = isReservedToken(t.getType());
 
-            // Se for token de erro léxico (ERROR_CHAR), reporta diagnóstico
             if (t.getType() == MlpLexer.ERROR_CHAR) {
                 reporter.add(new Diagnostic(
                         ErrorType.LEXICO,

@@ -41,7 +41,6 @@ public class App {
             );
         }
 
-        // Se houve erro léxico, continua para parser, mas já imprime aviso
         if (reporter.hasErrorsOfType(ErrorType.LEXICO)) {
             System.out.println("\n[AVISO] Foram encontrados erros léxicos.");
         }
@@ -53,7 +52,6 @@ public class App {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         MlpParser parser = new MlpParser(tokens);
 
-        // Remove listeners padrão e adiciona o nosso
         parser.removeErrorListeners();
         parser.addErrorListener(new MlpSyntaxErrorListener(reporter));
 
@@ -83,7 +81,6 @@ public class App {
             }
         }
 
-        // ---------------- Consolidação: imprimir diagnósticos ----------------
         if (reporter.hasAnyError()) {
             System.out.println("\n== Erros (consolidados) ==");
             for (Diagnostic d : reporter.all()) {
@@ -95,7 +92,6 @@ public class App {
         }
 
         // ---------------- Fase E: Geração de Código Intermediário (TAC) ----------------
-        // Só gera código se não houver erros e AST foi construída
         if (ast != null) {
             System.out.println("\n== Código Intermediário (TAC) ==");
             CodeGenerator codeGen = new CodeGenerator();
