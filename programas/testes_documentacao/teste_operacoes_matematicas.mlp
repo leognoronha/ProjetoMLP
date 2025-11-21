@@ -1,0 +1,11 @@
+$
+inteiro a, b, c;
+real r;
+
+a = 2;
+b = 3;
+c = 4;
+
+r = (a + b) * (c - a) / (b + c) + ((a * c) - b) / 2.0;
+
+$.

@@ -1,0 +1,11 @@
+$
+inteiro a;
+real r;
+caracter ch;
+
+a = 10;
+r = 2.5;
+
+ch = a;
+
+$.

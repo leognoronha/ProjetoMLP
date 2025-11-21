@@ -1,0 +1,13 @@
+$
+inteiro i, j, limite;
+
+i = 0;
+j = 0;
+limite = 3;
+
+enquanto (i < limite) OR (j < limite)
+  enquanto (j < limite)
+    j = j + 1
+;
+
+$.
