@@ -75,6 +75,7 @@ expressao
 
 operador
   : OP_SOMA
+  | OP_SUB
   | OP_MULT
   | OP_DIV
   | RESTO
@@ -117,6 +118,7 @@ MAIOR       : '>';
 MENOR       : '<';
 
 OP_SOMA   : '+';
+OP_SUB    : '-';
 OP_MULT   : '*';
 OP_DIV    : '/';
 

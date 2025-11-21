@@ -1,7 +1,6 @@
 $
 inteiro x, y, contador;
 real r;
-caracter ch;
 
 x = 10;
 y = 3;

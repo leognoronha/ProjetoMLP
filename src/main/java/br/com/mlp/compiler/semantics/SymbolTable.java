@@ -13,6 +13,8 @@ public class SymbolTable {
         public final Type type;
         public final int line;
         public final int column;
+        public boolean inicializada = false;
+        public boolean usada = false;
 
         public Entry(String name, Type type, int line, int column) {
             this.name = name;

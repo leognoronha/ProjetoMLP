@@ -1,7 +1,6 @@
 $
 inteiro x, y;
 real r;
-caracter c;
 
 x = 10;
 y = 3;

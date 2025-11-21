@@ -16,7 +16,13 @@ public enum ErrorCode {
     SEMANTICO_VARIAVEL_NAO_DECLARADA(200, "variável não declarada"),
     SEMANTICO_TIPO_INCOMPATIVEL(201, "atribuição ou operação com tipos incompatíveis"),
     SEMANTICO_IDENT_TAMANHO_EXCEDIDO(202, "identificador excede 10 caracteres"),
-    SEMANTICO_PROFUNDIDADE_COMANDOS(203, "profundidade de comandos excede 10");
+    SEMANTICO_PROFUNDIDADE_COMANDOS(203, "profundidade de comandos excede 10"),
+    SEMANTICO_VARIAVEL_REDECLARADA(204, "variável redeclarada"),
+    SEMANTICO_DIVISAO_POR_ZERO(205, "divisão por zero"),
+    SEMANTICO_OVERFLOW_NUMERICO(206, "overflow numérico"),
+    SEMANTICO_VARIAVEL_NAO_INICIALIZADA(207, "uso de variável não inicializada"),
+    SEMANTICO_VARIAVEL_NAO_UTILIZADA(208, "variável declarada mas não utilizada"),
+    SEMANTICO_AUTO_ATRIBUICAO(209, "auto-atribuição desnecessária");
 
     private final int code;
     private final String description;
