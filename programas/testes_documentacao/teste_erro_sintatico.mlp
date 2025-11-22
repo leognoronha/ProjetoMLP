@@ -1,7 +1,4 @@
-$
-inteiro a;
-
+$ inteiro a;
 a = 10
 a = 20;
-
 $.
